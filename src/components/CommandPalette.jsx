@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { profile } from '#content/profile.js';
 import { services } from '#content/services.js';
 import useStatusStore from '#store/status.js';
+import useLenisStore from '#store/lenis.js';
 
 const SECTIONS = [
     { id: 'home', label: '~/home' },
@@ -15,6 +16,12 @@ const SECTIONS = [
 
 const goToSection = (id, onHome) => {
     if (onHome) {
+        // getState() (not the hook) — this is a plain function, not a component.
+        const lenis = useLenisStore.getState().lenis;
+        if (lenis) {
+            lenis.scrollTo(`#${id}`, { offset: -72 });
+            return;
+        }
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         document.getElementById(id)?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' });
     } else {

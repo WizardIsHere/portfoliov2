@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Download, Menu, Search, X } from 'lucide-react';
 import { profile } from '#content/profile.js';
+import useLenisStore from '#store/lenis.js';
 
 const openCommandPalette = () => window.dispatchEvent(new Event('open-command-palette'));
 
@@ -16,6 +17,16 @@ const Nav = () => {
     const location = useLocation();
     const onHome = location.pathname === '/';
     const [open, setOpen] = useState(false);
+    const lenis = useLenisStore((s) => s.lenis);
+
+    // On the home page with Lenis active, route the jump through it so it's
+    // smooth like the rest of the page instead of a native instant/jump-cut
+    // anchor scroll fighting Lenis's own virtual scroll position.
+    const handleSectionClick = (e, id) => {
+        if (!onHome || !lenis) return; // let the native /#id navigation happen
+        e.preventDefault();
+        lenis.scrollTo(`#${id}`, { offset: -72 }); // clears the sticky header
+    };
 
     return (
         <header className="sticky top-0 z-40 border-b border-border/60 bg-bg/85 backdrop-blur-md">
@@ -30,6 +41,7 @@ const Nav = () => {
                         <li key={s.id}>
                             <a
                                 href={onHome ? `#${s.id}` : `/#${s.id}`}
+                                onClick={(e) => handleSectionClick(e, s.id)}
                                 className="text-fg-muted transition-colors hover:text-fg"
                             >
                                 {s.label}
@@ -73,7 +85,10 @@ const Nav = () => {
                         <li key={s.id}>
                             <a
                                 href={onHome ? `#${s.id}` : `/#${s.id}`}
-                                onClick={() => setOpen(false)}
+                                onClick={(e) => {
+                                    handleSectionClick(e, s.id);
+                                    setOpen(false);
+                                }}
                                 className="block min-h-11 py-2.5 text-fg-muted"
                             >
                                 {s.label}

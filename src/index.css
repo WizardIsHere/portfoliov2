@@ -29,6 +29,30 @@ body {
     font-family: var(--font-sans);
 }
 
+/* Custom cursor (CustomCursor.jsx) — only applied when that component has
+   actually mounted its listeners (pointer:fine + motion allowed), so there's
+   never a dead cursor-less page if JS is slow/disabled. */
+html.custom-cursor-active,
+html.custom-cursor-active * {
+    cursor: none;
+}
+
+html.custom-cursor-active input,
+html.custom-cursor-active textarea {
+    cursor: text;
+}
+
+/* Lenis (SmoothScroll.jsx) recommended base CSS — without this it can fight
+   the page's own height/overflow in ways that only show up intermittently. */
+html.lenis,
+html.lenis body {
+    height: auto;
+}
+
+.lenis.lenis-stopped {
+    overflow: hidden;
+}
+
 ::selection {
     background: color-mix(in srgb, var(--color-accent) 35%, transparent);
     color: var(--color-fg);
@@ -50,6 +74,15 @@ body {
     @apply relative inline-flex h-2 w-2 shrink-0 rounded-full;
 }
 
+@keyframes liftoff-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
+@utility liftoff-icon {
+    animation: liftoff-bob 0.6s ease-in-out infinite;
+}
+
 /* Subtle scanline/grid texture — signature ambient effect, ~3% opacity so it
    reads as texture rather than noise. */
 .grid-texture {
@@ -62,6 +95,27 @@ body {
 @keyframes ambient-drift {
     0%, 100% { transform: translate(0, 0) scale(1); }
     50% { transform: translate(-3%, 2%) scale(1.05); }
+}
+
+/* Radar sweep behind the hero headline — a slow rotating conic-gradient wedge.
+   Lives on an inner div so its rotation transform doesn't fight the outer
+   div's static centering transform (-translate-x-1/2 -translate-y-1/2). */
+@keyframes radar-spin {
+    to { transform: rotate(360deg); }
+}
+
+.radar-sweep {
+    background: conic-gradient(from 0deg, transparent 0deg, var(--color-accent) 6deg, transparent 50deg, transparent 360deg);
+    animation: radar-spin 14s linear infinite;
+}
+
+@keyframes scroll-cue-bounce {
+    0%, 100% { transform: translateY(0) translateX(-50%); opacity: 0.6; }
+    50% { transform: translateY(6px) translateX(-50%); opacity: 1; }
+}
+
+.scroll-cue-bounce {
+    animation: scroll-cue-bounce 1.8s ease-in-out infinite;
 }
 
 .ambient-glow {
@@ -111,7 +165,10 @@ body {
     .ambient-glow,
     .type-caret,
     .status-pulse::before,
-    .animate-toast-in {
+    .animate-toast-in,
+    .liftoff-icon,
+    .radar-sweep,
+    .scroll-cue-bounce {
         animation: none;
     }
 }

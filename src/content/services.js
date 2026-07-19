@@ -10,6 +10,7 @@ export const services = [
         stack: ["Next.js", "TypeScript", "Tailwind", "Gemini API"],
         live: "https://shortlistai-lac.vercel.app/",
         source: null,
+        image: "/images/shortlistai.png",
         featured: true,
         caseStudy: {
             summary:
@@ -165,6 +166,7 @@ export const services = [
         stack: ["React", "Sanity CMS"],
         live: "https://chipper-seahorse-51781d.netlify.app/",
         source: "https://github.com/WizardIsHere/Nile",
+        image: "/images/nile.png",
         featured: false,
         caseStudy: {
             summary: "A storefront for headphones, speakers, and earphones — product listings, a promo hero, a cart, and checkout.",
@@ -191,6 +193,7 @@ export const services = [
         stack: ["React", "Material UI", "Nivo"],
         live: "https://tiny-faloodeh-e6f0d7.netlify.app",
         source: "https://github.com/WizardIsHere/admin_dashboard_v_2",
+        image: "/images/admin-dashboard.png",
         featured: false,
         caseStudy: {
             summary: "Back-office surface area in one place: revenue/orders overview, a Trello-style Kanban board, calendar scheduling, and sortable/filterable data grids.",

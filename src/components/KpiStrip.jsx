@@ -21,14 +21,14 @@ const KpiStrip = () => {
                             onClick={() => setActiveTip((prev) => (prev === i ? null : i))}
                             onMouseEnter={() => setActiveTip(i)}
                             onMouseLeave={() => setActiveTip((prev) => (prev === i ? null : prev))}
-                            className="relative flex min-h-24 flex-col items-start justify-center gap-1 px-5 py-4 text-left transition-colors hover:bg-surface/50"
+                            className="relative flex min-h-32 flex-col items-start justify-center gap-1.5 px-5 py-4 text-left transition-colors hover:bg-surface/50 sm:min-h-40"
                         >
-                            <span className="text-2xl font-bold tabular-nums text-fg sm:text-3xl">
+                            <span className="text-[clamp(2.25rem,5vw,3.75rem)] font-black leading-none tracking-tight tabular-nums text-fg">
                                 {liveErrored ? '—' : <NumberTick value={tickValue} />}
                                 {!liveErrored && tickValue != null && kpi.suffix}
-                                {kpi.unit && <span className="ml-1 text-sm font-normal text-fg-muted">{kpi.unit}</span>}
+                                {kpi.unit && <span className="ml-1.5 text-sm font-normal text-fg-muted">{kpi.unit}</span>}
                             </span>
-                            <span className="text-xs text-fg-muted">{kpi.label}</span>
+                            <span className="text-[11px] uppercase tracking-wider text-fg-muted">{kpi.label}</span>
 
                             {activeTip === i && (
                                 <span

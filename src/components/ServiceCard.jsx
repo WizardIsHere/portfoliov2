@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, FileText, Github } from 'lucide-react';
+import { ArrowUpRight, FileText, Github, Lock } from 'lucide-react';
+import gsap from 'gsap';
 
 const STATUS_STYLE = {
     operational: { dot: 'bg-accent', text: 'text-accent', label: 'operational' },
@@ -9,9 +10,67 @@ const STATUS_STYLE = {
 
 const ServiceCard = ({ service }) => {
     const statusStyle = STATUS_STYLE[service.status] || STATUS_STYLE.operational;
+    const cardRef = useRef(null);
+    const [tiltEnabled] = useState(
+        () =>
+            typeof window !== 'undefined' &&
+            window.matchMedia('(pointer: fine)').matches &&
+            !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
+
+    // Mouse-tracking 3D tilt — desktop + motion-allowed only, same gating
+    // rationale as CustomCursor.jsx (pure decoration, cut first for those users).
+    useEffect(() => {
+        if (!tiltEnabled) return;
+        const el = cardRef.current;
+        if (!el) return;
+
+        const rotateX = gsap.quickTo(el, 'rotationX', { duration: 0.4, ease: 'power3.out' });
+        const rotateY = gsap.quickTo(el, 'rotationY', { duration: 0.4, ease: 'power3.out' });
+        const lift = gsap.quickTo(el, 'z', { duration: 0.4, ease: 'power3.out' });
+
+        const handleMove = (e) => {
+            const rect = el.getBoundingClientRect();
+            const px = (e.clientX - rect.left) / rect.width - 0.5;
+            const py = (e.clientY - rect.top) / rect.height - 0.5;
+            rotateX(py * -12);
+            rotateY(px * 12);
+            lift(20);
+        };
+        const handleLeave = () => {
+            rotateX(0);
+            rotateY(0);
+            lift(0);
+        };
+
+        el.addEventListener('mousemove', handleMove);
+        el.addEventListener('mouseleave', handleLeave);
+        return () => {
+            el.removeEventListener('mousemove', handleMove);
+            el.removeEventListener('mouseleave', handleLeave);
+        };
+    }, [tiltEnabled]);
 
     return (
-        <article className="service-card group flex flex-col gap-3 rounded-lg border border-border bg-surface/60 p-5 transition-colors hover:border-fg-muted">
+        <article
+            ref={cardRef}
+            style={{ transformStyle: 'preserve-3d', transformPerspective: 800 }}
+            className="service-card group flex flex-col gap-3 overflow-hidden rounded-lg border border-border bg-surface/60 p-5 transition-colors hover:border-fg-muted">
+            <div className="-mx-5 -mt-5 mb-1 aspect-video overflow-hidden border-b border-border bg-muted">
+                {service.image ? (
+                    <img
+                        src={service.image}
+                        alt={`${service.name} screenshot`}
+                        loading="lazy"
+                        className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                    />
+                ) : (
+                    <div className="grid-texture mono flex h-full w-full flex-col items-center justify-center gap-1.5 text-fg-muted/70">
+                        <Lock size={18} />
+                        <span className="text-[11px] uppercase tracking-wider">no public preview</span>
+                    </div>
+                )}
+            </div>
             <div className="mono flex items-center gap-2 text-[11px] uppercase tracking-wider">
                 <span className={`status-dot ${statusStyle.dot}`} />
                 <span className={statusStyle.text}>{statusStyle.label}</span>

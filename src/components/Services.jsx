@@ -17,18 +17,19 @@ const Services = () => {
             if (!cards?.length) return;
 
             if (reduceMotion) {
-                gsap.set(cards, { opacity: 1, y: 0, scale: 1 });
+                gsap.set(cards, { opacity: 1, y: 0, scale: 1, rotationX: 0 });
                 return;
             }
 
-            gsap.set(cards, { opacity: 0, y: 16, scale: 0.96 });
+            gsap.set(cards, { opacity: 0, y: 60, scale: 0.85, rotationX: -25, transformPerspective: 800, transformOrigin: 'top center' });
             gsap.to(cards, {
                 opacity: 1,
                 y: 0,
                 scale: 1,
-                duration: 0.4,
-                ease: 'back.out(1.4)',
-                stagger: { each: 0.06, from: 'start', grid: 'auto' },
+                rotationX: 0,
+                duration: 0.8,
+                ease: 'back.out(1.6)',
+                stagger: { each: 0.1, from: 'start', grid: 'auto' },
                 scrollTrigger: { trigger: gridRef.current, start: 'top 85%', once: true },
             });
         },
