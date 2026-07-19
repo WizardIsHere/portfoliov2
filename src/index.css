@@ -1,0 +1,117 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap");
+
+@import "tailwindcss";
+
+@theme {
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    --font-sans: "IBM Plex Sans", ui-sans-serif, sans-serif;
+
+    /* Design tokens — contrast-verified against #0F172A/#1E293B (see
+       PORTFOLIO_V2_PLAN.md §4 and the verification script run before writing this). */
+    --color-bg: #0f172a;
+    --color-surface: #1e293b;
+    --color-muted: #272f42;
+    --color-border: #475569;
+    --color-fg: #f8fafc;
+    --color-fg-muted: #94a3b8;
+    --color-accent: #22c55e;
+    --color-warn: #f59e0b;
+    --color-destructive: #ef4444;
+}
+
+html,
+body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+}
+
+body {
+    font-family: var(--font-sans);
+}
+
+::selection {
+    background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+    color: var(--color-fg);
+}
+
+/* Every interactive element gets a visible, high-contrast (7.83:1) focus ring —
+   never rely on default browser outline alone, never remove it without a replacement. */
+:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+@utility mono {
+    font-family: var(--font-mono);
+}
+
+@utility status-dot {
+    @apply relative inline-flex h-2 w-2 shrink-0 rounded-full;
+}
+
+/* Subtle scanline/grid texture — signature ambient effect, ~3% opacity so it
+   reads as texture rather than noise. */
+.grid-texture {
+    background-image:
+        linear-gradient(color-mix(in srgb, var(--color-fg) 4%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--color-fg) 4%, transparent) 1px, transparent 1px);
+    background-size: 48px 48px;
+}
+
+@keyframes ambient-drift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-3%, 2%) scale(1.05); }
+}
+
+.ambient-glow {
+    animation: ambient-drift 22s ease-in-out infinite;
+}
+
+@keyframes caret-blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+}
+
+.type-caret {
+    display: inline-block;
+    width: 0.55em;
+    height: 1em;
+    margin-left: 0.15em;
+    background: currentColor;
+    vertical-align: -0.15em;
+    animation: caret-blink 1s steps(1) infinite;
+}
+
+@keyframes pulse-ring {
+    0% { transform: scale(0.9); opacity: 0.7; }
+    70% { transform: scale(1.8); opacity: 0; }
+    100% { transform: scale(1.8); opacity: 0; }
+}
+
+.status-pulse::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: currentColor;
+    animation: pulse-ring 2s ease-out infinite;
+}
+
+@keyframes toast-in {
+    from { transform: translateY(12px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-toast-in {
+    animation: toast-in 0.3s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ambient-glow,
+    .type-caret,
+    .status-pulse::before,
+    .animate-toast-in {
+        animation: none;
+    }
+}
