@@ -97,16 +97,19 @@ html.lenis body {
     50% { transform: translate(-3%, 2%) scale(1.05); }
 }
 
-/* Radar sweep behind the hero headline — a slow rotating conic-gradient wedge.
-   Lives on an inner div so its rotation transform doesn't fight the outer
-   div's static centering transform (-translate-x-1/2 -translate-y-1/2). */
-@keyframes radar-spin {
-    to { transform: rotate(360deg); }
+/* Hero's scrolling command log (Hero.jsx: CommandLog) — the inner list is
+   duplicated, so translating exactly -50% loops seamlessly back to frame 0. */
+.log-scroll-mask {
+    mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
 }
 
-.radar-sweep {
-    background: conic-gradient(from 0deg, transparent 0deg, var(--color-accent) 6deg, transparent 50deg, transparent 360deg);
-    animation: radar-spin 14s linear infinite;
+@keyframes log-scroll {
+    from { transform: translateY(0); }
+    to { transform: translateY(-50%); }
+}
+
+.log-scroll {
+    animation: log-scroll 16s linear infinite;
 }
 
 @keyframes scroll-cue-bounce {
@@ -167,7 +170,7 @@ html.lenis body {
     .status-pulse::before,
     .animate-toast-in,
     .liftoff-icon,
-    .radar-sweep,
+    .log-scroll,
     .scroll-cue-bounce {
         animation: none;
     }

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import dayjs from 'dayjs';
 import { kpis } from '#content/profile.js';
 import useGithub from '#hooks/useGithub.js';
 import NumberTick from './NumberTick.jsx';
 
 const KpiStrip = () => {
-    const { status, repos } = useGithub();
+    const { status, profile: githubProfile } = useGithub();
     const [activeTip, setActiveTip] = useState(null);
 
     return (
@@ -12,7 +13,15 @@ const KpiStrip = () => {
             <div className="mono mx-auto grid max-w-5xl grid-cols-2 divide-x divide-y divide-border/60 border-border/60 sm:grid-cols-4 sm:divide-y-0">
                 {kpis.map((kpi, i) => {
                     const liveErrored = kpi.live && status === 'error';
-                    const tickValue = kpi.live ? (status === 'ready' ? repos.length : null) : kpi.to;
+                    // public_repos is the account's real total; the repos array
+                    // elsewhere is capped at per_page=6 and would undercount here.
+                    const tickValue = kpi.live
+                        ? status === 'ready'
+                            ? githubProfile?.public_repos
+                            : null
+                        : kpi.since
+                          ? dayjs().diff(dayjs(kpi.since), 'year')
+                          : kpi.to;
 
                     return (
                         <button

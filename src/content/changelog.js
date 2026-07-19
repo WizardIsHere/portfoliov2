@@ -7,10 +7,10 @@ export const changelog = [
         role: "Software Developer",
         org: "Cholamandalam Investment and Finance Company Ltd.",
         entries: [
-            "Worked on LEAP, a Sales Vehicle Finance application — backend development, API design, database optimization. Automated loan processing via Node.js batch jobs for improved operational accuracy.",
-            "Developed and scaled OEM Insights, a full-stack analytics dashboard for OEM partners tracking leads, disbursed amounts, and business KPIs. Designed NestJS APIs processing 80K+ records for real-time insights via a dynamic frontend with interactive charts and filters.",
-            "Developed centralized performance dashboards using Grafana and ClickHouse to monitor API health, system usage, and database performance.",
-            "Implemented SSO in LEAP with token-based auth, coordinating backend validation via enterprise IDPs. Ensured secure token storage and cross-window communication.",
+            "Shipped LEAP, a vehicle finance platform — owned the backend, API design, and DB optimization end to end. Automated loan processing with Node.js batch jobs, killing a slow manual step.",
+            "Built OEM Insights from zero: a full-stack analytics dashboard for OEM partners. NestJS APIs crunch 80K+ records into real-time leads, disbursement, and KPI views.",
+            "Stood up centralized observability with Grafana + ClickHouse — API health, system usage, and DB performance in one place, before anyone had to ask for it.",
+            "Hardened LEAP's auth: token-based SSO across enterprise IDPs, secure token storage, safe cross-window handoff.",
         ],
     },
     {
@@ -19,7 +19,7 @@ export const changelog = [
         role: "Associate Developer — Trainee",
         org: "Mahatma Gandhi University",
         entries: [
-            "Started full-stack development here — the foundation the roles above build on.",
+            "First production code, first real deploy — everything above traces back to this.",
         ],
     },
 ];

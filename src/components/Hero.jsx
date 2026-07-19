@@ -13,6 +13,46 @@ import NumberTick from './NumberTick.jsx';
 
 dayjs.extend(relativeTime);
 
+// kind drives color: "ok" = passing step (accent), "cmd" = a shell command
+// ($ prompt highlighted), "run" = tool output line.
+const LOG_LINES = [
+    { kind: 'cmd', text: 'git commit -m "fix: retry on 5xx"' },
+    { kind: 'cmd', text: 'npm run build' },
+    { kind: 'ok', text: '✓ compiled in 1.02s' },
+    { kind: 'cmd', text: 'docker push registry/api:1.7.2' },
+    { kind: 'cmd', text: 'kubectl rollout status deploy/api' },
+    { kind: 'ok', text: '✓ deployment "api" rolled out' },
+    { kind: 'cmd', text: 'npm test -- --coverage' },
+    { kind: 'ok', text: '✓ 148 passing' },
+    { kind: 'cmd', text: 'git push origin main' },
+    { kind: 'cmd', text: 'eslint . --fix' },
+    { kind: 'cmd', text: 'vercel deploy --prod' },
+    { kind: 'ok', text: '✓ production: shushant.dev' },
+    { kind: 'run', text: 'psql -c "ANALYZE orders;"' },
+    { kind: 'cmd', text: 'git log --oneline -5' },
+];
+
+const LINE_TONE = { ok: 'text-accent', cmd: 'text-fg', run: 'text-fg-muted' };
+
+// A slow-scrolling log of real dev commands along the hero's edge — legible
+// text reads as unmistakably "developer" in a way an abstract shape doesn't.
+// The list is rendered twice back-to-back so the loop can wrap seamlessly.
+const CommandLog = () => (
+    <div
+        aria-hidden="true"
+        className="log-scroll-mask pointer-events-none absolute bottom-0 right-0 top-0 hidden w-72 overflow-hidden opacity-25 lg:block"
+    >
+        <div className="log-scroll mono flex flex-col gap-3 text-[11px] leading-relaxed">
+            {[...LOG_LINES, ...LOG_LINES].map((line, i) => (
+                <p key={i} className={`whitespace-nowrap ${LINE_TONE[line.kind]}`}>
+                    {line.kind === 'cmd' && <span className="text-accent/70">$ </span>}
+                    {line.text}
+                </p>
+            ))}
+        </div>
+    </div>
+);
+
 const useUptime = () => {
     const [seconds, setSeconds] = useState(0);
     useEffect(() => {
@@ -28,14 +68,15 @@ const useUptime = () => {
 // Reframed from a floating side card into a horizontal HUD strip along the
 // hero's bottom edge — frees the fold for the headline to actually dominate.
 const TelemetryBar = () => {
-    const { status, events, repos } = useGithub();
+    const { status, events, profile: githubProfile } = useGithub();
     const uptime = useUptime();
 
     const lastPush = events.find((e) => e.type === 'PushEvent');
     const thirtyDaysAgo = dayjs().subtract(30, 'day');
-    const commits30d = events
-        .filter((e) => e.type === 'PushEvent' && dayjs(e.created_at).isAfter(thirtyDaysAgo))
-        .reduce((sum, e) => sum + (e.payload?.commits?.length || 0), 0);
+    // GitHub's events API no longer includes a commits array on PushEvent
+    // payloads, so an accurate commit count isn't derivable from this feed —
+    // counting pushes themselves is the honest number available here.
+    const pushes30d = events.filter((e) => e.type === 'PushEvent' && dayjs(e.created_at).isAfter(thirtyDaysAgo)).length;
 
     const items = [
         { label: 'session uptime', value: uptime },
@@ -45,20 +86,14 @@ const TelemetryBar = () => {
                 status === 'ready' ? (lastPush ? dayjs(lastPush.created_at).fromNow() : '—') : status === 'error' ? 'unavailable' : '…',
         },
         {
-            label: 'commits (30d)',
-            value: status === 'error' ? '—' : <NumberTick value={status === 'ready' ? commits30d : null} />,
+            label: 'pushes (30d)',
+            value: status === 'error' ? '—' : <NumberTick value={status === 'ready' ? pushes30d : null} />,
         },
         {
             label: 'public repos',
-            value:
-                status === 'error' ? (
-                    '—'
-                ) : (
-                    <>
-                        <NumberTick value={status === 'ready' ? repos.length : null} />
-                        {status === 'ready' && '+'}
-                    </>
-                ),
+            // public_repos is the account's real total; the fetched repos array
+            // elsewhere is capped at per_page=6 and would undercount here.
+            value: status === 'error' ? '—' : <NumberTick value={status === 'ready' ? githubProfile?.public_repos : null} />,
         },
     ];
 
@@ -123,14 +158,7 @@ const Hero = () => {
 
     return (
         <section id="home" className="relative overflow-hidden border-b border-border/60">
-            {/* Radar sweep — outer div handles the static centering transform,
-                inner div only rotates, so the two transforms don't fight each other. */}
-            <div
-                aria-hidden="true"
-                className="pointer-events-none absolute left-1/2 top-1/2 h-[85vw] w-[85vw] max-h-[820px] max-w-[820px] -translate-x-1/2 -translate-y-1/2 opacity-[0.08]"
-            >
-                <div className="radar-sweep h-full w-full rounded-full" />
-            </div>
+            <CommandLog />
             <div
                 aria-hidden="true"
                 className="ambient-glow pointer-events-none absolute -top-40 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-accent/10 blur-3xl"

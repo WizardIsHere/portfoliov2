@@ -5,7 +5,7 @@ export const profile = {
     location: "Bangalore, KA",
     openTo: "senior frontend / full-stack roles",
     email: "mshushant236@gmail.com",
-    phone: "+91 7000493778",
+    phone: "+91 ••••••••78",
     github: "https://github.com/WizardIsHere",
     githubUser: "WizardIsHere",
     linkedin: "https://linkedin.com/in/m-shushant",
@@ -18,11 +18,13 @@ export const profile = {
 // to the actual numeric value instead of animating a string.
 export const kpis = [
     {
-        to: 2,
+        // Computed at render time from this date (see KpiStrip.jsx), not a
+        // static number — so it never needs another manual correction.
+        since: "2023-01-01",
         suffix: "+",
         unit: "yrs",
         label: "production fintech",
-        detail: "Shipping LEAP (vehicle finance) and OEM Insights in production since Jan 2024.",
+        detail: "Shipping LEAP (vehicle finance) and OEM Insights in production since early 2023.",
     },
     {
         to: 80,
@@ -40,7 +42,7 @@ export const kpis = [
     },
     {
         live: true,
-        suffix: "+",
+        suffix: "",
         unit: "",
         label: "public repos (GitHub API)",
         detail: "Pulled live from the GitHub API below — not a static number.",

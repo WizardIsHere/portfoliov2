@@ -5,7 +5,7 @@ const Changelog = () => (
     <section id="changelog" className="border-b border-border/60 py-16 sm:py-20">
         <div className="mx-auto max-w-5xl px-5">
             <h2 className="mono mb-1 text-xs uppercase tracking-wider text-accent">~/changelog</h2>
-            <p className="mb-8 max-w-xl text-fg-muted">Experience, read like a deploy history — newest first.</p>
+            <p className="mb-8 max-w-xl text-fg-muted">No buzzwords, just diffs — every release shipped, newest first.</p>
 
             <div className="flex flex-col gap-6">
                 {changelog.map((entry) => (
