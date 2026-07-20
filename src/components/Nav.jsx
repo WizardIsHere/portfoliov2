@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Download, Menu, Search, X } from 'lucide-react';
 import { profile } from '#content/profile.js';
 import useLenisStore from '#store/lenis.js';
+import useStatusStore from '#store/status.js';
 
 const openCommandPalette = () => window.dispatchEvent(new Event('open-command-palette'));
 
@@ -12,6 +13,42 @@ const SECTIONS = [
     { id: 'changelog', label: '~/changelog' },
     { id: 'contact', label: '~/contact' },
 ];
+
+const timeFormatter = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Kolkata',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+});
+
+// A thin "this is a live console, not a static page" strip — real local time
+// in Bangalore, ticking every second, plus the same status the Hero shows.
+const NowStrip = () => {
+    const [time, setTime] = useState(() => timeFormatter.format(new Date()));
+    const status = useStatusStore((s) => s.status);
+    const degraded = status === 'degraded';
+
+    useEffect(() => {
+        const id = setInterval(() => setTime(timeFormatter.format(new Date())), 1000);
+        return () => clearInterval(id);
+    }, []);
+
+    return (
+        <div className="mono border-t border-border/40 bg-surface/30">
+            <div className="mx-auto flex max-w-5xl items-center gap-2 px-5 py-1.5 text-[11px] text-fg-muted">
+                <span className={`status-dot relative shrink-0 ${degraded ? 'bg-warn' : 'bg-accent'}`}>
+                    <span className="status-pulse absolute inset-0" aria-hidden="true" />
+                </span>
+                <span className="tabular-nums">{time} IST</span>
+                <span className="text-border">·</span>
+                <span>Bangalore, IN</span>
+                <span className="hidden text-border sm:inline">·</span>
+                <span className="hidden truncate sm:inline">open to: {profile.openTo}</span>
+            </div>
+        </div>
+    );
+};
 
 const Nav = () => {
     const location = useLocation();
@@ -78,6 +115,8 @@ const Nav = () => {
                     </button>
                 </div>
             </nav>
+
+            <NowStrip />
 
             {open && (
                 <ul className="mono flex flex-col gap-1 border-t border-border/60 px-5 py-3 sm:hidden">

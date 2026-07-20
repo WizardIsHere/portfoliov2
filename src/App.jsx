@@ -6,6 +6,8 @@ import Home from '#pages/Home.jsx';
 import CaseStudy from '#pages/CaseStudy.jsx';
 import NotFound from '#pages/NotFound.jsx';
 import CommandPalette from '#components/CommandPalette.jsx';
+import Terminal from '#components/Terminal.jsx';
+import MatrixRain from '#components/MatrixRain.jsx';
 import Toast from '#components/Toast.jsx';
 import SmoothScroll from '#components/SmoothScroll.jsx';
 import CustomCursor from '#components/CustomCursor.jsx';
@@ -14,11 +16,13 @@ gsap.registerPlugin(ScrollTrigger);
 
 const App = () => (
     <>
-        {/* Mounted once, outside <Routes>, so ⌘K and the easter-egg toast work
-            identically on the home page and every case-study route. */}
+        {/* Mounted once, outside <Routes>, so ⌘K, the backtick terminal, and the
+            easter-egg toast work identically on the home page and every case-study route. */}
         <SmoothScroll />
         <CustomCursor />
         <CommandPalette />
+        <Terminal />
+        <MatrixRain />
         <Toast />
         <Routes>
             <Route path="/" element={<Home />} />

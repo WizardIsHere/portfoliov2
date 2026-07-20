@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { ChevronDown, Download, Github, Linkedin, MapPin } from 'lucide-react';
+import { ChevronDown, Download, Github, Linkedin, MapPin, TerminalSquare } from 'lucide-react';
 import { profile } from '#content/profile.js';
 import useGithub from '#hooks/useGithub.js';
 import useStatusStore from '#store/status.js';
@@ -34,13 +34,18 @@ const LOG_LINES = [
 
 const LINE_TONE = { ok: 'text-accent', cmd: 'text-fg', run: 'text-fg-muted' };
 
+const openTerminal = () => window.dispatchEvent(new Event('open-terminal'));
+
 // A slow-scrolling log of real dev commands along the hero's edge — legible
 // text reads as unmistakably "developer" in a way an abstract shape doesn't.
+// Doubles as the desktop entry point into the real Terminal (Terminal.jsx).
 // The list is rendered twice back-to-back so the loop can wrap seamlessly.
 const CommandLog = () => (
-    <div
-        aria-hidden="true"
-        className="log-scroll-mask pointer-events-none absolute bottom-0 right-0 top-0 hidden w-72 overflow-hidden opacity-25 lg:block"
+    <button
+        type="button"
+        onClick={openTerminal}
+        aria-label="Open interactive terminal"
+        className="log-scroll-mask group absolute bottom-0 right-0 top-0 hidden w-72 cursor-pointer overflow-hidden text-left opacity-25 transition-opacity hover:opacity-60 lg:block"
     >
         <div className="log-scroll mono flex flex-col gap-3 text-[11px] leading-relaxed">
             {[...LOG_LINES, ...LOG_LINES].map((line, i) => (
@@ -50,7 +55,7 @@ const CommandLog = () => (
                 </p>
             ))}
         </div>
-    </div>
+    </button>
 );
 
 const useUptime = () => {
@@ -132,10 +137,27 @@ const ScrollCue = () => {
     );
 };
 
+// Click the status dot 5 times within 2s of each other to trigger the same
+// incident/hired easter egg as typing `sudo` — a physical, discoverable
+// alternative to the hidden command for anyone who never opens the terminal.
+const useSecretClicks = (onTrigger, threshold = 5, windowMs = 2000) => {
+    const clicksRef = useRef([]);
+    return () => {
+        const now = Date.now();
+        clicksRef.current = [...clicksRef.current, now].filter((t) => now - t < windowMs);
+        if (clicksRef.current.length >= threshold) {
+            clicksRef.current = [];
+            onTrigger();
+        }
+    };
+};
+
 const Hero = () => {
     const status = useStatusStore((s) => s.status);
+    const triggerEasterEgg = useStatusStore((s) => s.triggerEasterEgg);
     const degraded = status === 'degraded';
     const contentRef = useRef(null);
+    const handleStatusClick = useSecretClicks(triggerEasterEgg);
 
     // Boot-sequence-style staggered reveal — status pill, then headline, then
     // the rest, in order. Snaps straight to the final state under reduced motion.
@@ -166,12 +188,17 @@ const Hero = () => {
             <div className="grid-texture pointer-events-none absolute inset-0 opacity-40" aria-hidden="true" />
 
             <div ref={contentRef} className="relative mx-auto flex min-h-[85dvh] max-w-5xl flex-col justify-center px-5 py-16">
-                <div className={`hero-reveal mono mb-5 flex items-center gap-2 text-xs ${degraded ? 'text-warn' : 'text-accent'}`}>
+                <button
+                    type="button"
+                    onClick={handleStatusClick}
+                    aria-label="System status"
+                    className={`hero-reveal mono mb-5 flex min-h-8 w-fit items-center gap-2 text-xs ${degraded ? 'text-warn' : 'text-accent'}`}
+                >
                     <span className={`status-dot relative ${degraded ? 'bg-warn' : 'bg-accent'}`}>
                         <span className="status-pulse absolute inset-0" aria-hidden="true" />
                     </span>
                     {degraded ? 'DEGRADED' : 'OPERATIONAL'}
-                </div>
+                </button>
 
                 <h1 className="hero-reveal text-[clamp(2.5rem,6vw,4.75rem)] font-black leading-[0.95] tracking-[-0.03em] text-fg">
                     {profile.name}
@@ -220,6 +247,15 @@ const Hero = () => {
                         <Linkedin size={16} />
                         LinkedIn
                     </a>
+                    <button
+                        type="button"
+                        onClick={openTerminal}
+                        className="mono flex min-h-11 items-center gap-2 rounded-md border border-dashed border-border px-4 text-sm text-fg-muted transition-colors hover:border-accent/50 hover:text-accent"
+                    >
+                        <TerminalSquare size={16} />
+                        open terminal
+                        <kbd className="hidden rounded border border-border px-1 text-[10px] sm:inline">`</kbd>
+                    </button>
                 </div>
 
                 <ScrollCue />
