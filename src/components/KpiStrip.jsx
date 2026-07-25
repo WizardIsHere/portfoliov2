@@ -30,13 +30,18 @@ const KpiStrip = () => {
                             onClick={() => setActiveTip((prev) => (prev === i ? null : i))}
                             onMouseEnter={() => setActiveTip(i)}
                             onMouseLeave={() => setActiveTip((prev) => (prev === i ? null : prev))}
-                            className="relative flex min-h-32 flex-col items-start justify-center gap-1.5 px-5 py-4 text-left transition-colors hover:bg-surface/50 sm:min-h-40"
+                            className="group relative flex min-h-32 flex-col items-start justify-center gap-1.5 px-5 py-4 text-left transition-colors hover:bg-surface/40 sm:min-h-40"
                         >
+                            <span className="mono absolute left-5 top-3 text-[10px] tabular-nums text-fg-muted/40 transition-colors group-hover:text-accent-2">
+                                {String(i).padStart(2, '0')}
+                            </span>
                             <span className="text-[clamp(2.25rem,5vw,3.75rem)] font-black leading-none tracking-tight tabular-nums text-fg">
                                 {liveErrored ? '—' : <NumberTick value={tickValue} />}
                                 {!liveErrored && tickValue != null && kpi.suffix}
                                 {kpi.unit && <span className="ml-1.5 text-sm font-normal text-fg-muted">{kpi.unit}</span>}
                             </span>
+                            {/* gauge tick — a small cyan bar that extends on hover */}
+                            <span className="block h-px w-8 bg-accent-2/40 transition-all duration-300 group-hover:w-12 group-hover:bg-accent-2" aria-hidden="true" />
                             <span className="text-[11px] uppercase tracking-wider text-fg-muted">{kpi.label}</span>
 
                             {activeTip === i && (

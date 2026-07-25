@@ -111,7 +111,11 @@ const StackMap = () => {
                                     <span className="stack-reveal stack-badge flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-accent/40 bg-accent/10 text-accent">
                                         <Icon size={16} />
                                     </span>
-                                    {!isLast && <span className="stack-line w-px flex-1 bg-gradient-to-b from-accent/50 to-border" />}
+                                    {!isLast && (
+                                        <span className="stack-line relative w-px flex-1 bg-gradient-to-b from-accent/50 to-border">
+                                            <span className="stack-packet" style={{ animationDelay: `${i * 0.8}s` }} aria-hidden="true" />
+                                        </span>
+                                    )}
                                 </div>
                                 <div
                                     className={`stack-reveal group relative flex min-w-0 flex-1 flex-col gap-3 overflow-hidden rounded-lg border border-border bg-surface/50 p-4 transition-colors hover:border-accent/40 ${isLast ? 'mb-0' : 'mb-3'}`}

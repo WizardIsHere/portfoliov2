@@ -15,7 +15,10 @@ const useGithub = () => {
                 const [profileRes, reposRes, eventsRes] = await Promise.all([
                     fetch(`https://api.github.com/users/${profile.githubUser}`),
                     fetch(`https://api.github.com/users/${profile.githubUser}/repos?sort=updated&per_page=6`),
-                    fetch(`https://api.github.com/users/${profile.githubUser}/events/public`),
+                    // per_page=100 (GitHub's max) — same single request, but enough
+                    // history for the heatmap to cover a real ~90-day window instead
+                    // of the default 30-event page.
+                    fetch(`https://api.github.com/users/${profile.githubUser}/events/public?per_page=100`),
                 ]);
                 if (!profileRes.ok || !reposRes.ok || !eventsRes.ok) throw new Error('GitHub API error');
 

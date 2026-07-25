@@ -48,16 +48,19 @@ const CustomCursor = () => {
             ringY(e.clientY);
         };
 
+        // Over an interactive element the ring morphs into a cyan targeting
+        // reticle (rounded square, larger) while the center dot stays put — a
+        // deliberate "locked on" read rather than a plain scale-up.
         const handleOver = (e) => {
             if (e.target.closest?.(HOVER_SELECTOR)) {
-                gsap.to(ring, { scale: 1.8, opacity: 0.5, duration: 0.25, ease: 'power2.out' });
-                gsap.to(dot, { scale: 0, duration: 0.2 });
+                gsap.to(ring, { scale: 1.5, borderRadius: 7, borderColor: '#22d3ee', opacity: 1, duration: 0.25, ease: 'power2.out' });
+                gsap.to(dot, { scale: 1, backgroundColor: '#22d3ee', duration: 0.2 });
             }
         };
         const handleOut = (e) => {
             if (e.target.closest?.(HOVER_SELECTOR)) {
-                gsap.to(ring, { scale: 1, opacity: 1, duration: 0.25, ease: 'power2.out' });
-                gsap.to(dot, { scale: 1, duration: 0.2 });
+                gsap.to(ring, { scale: 1, borderRadius: 9999, borderColor: '#22c55e', opacity: 1, duration: 0.25, ease: 'power2.out' });
+                gsap.to(dot, { scale: 1, backgroundColor: '#22c55e', duration: 0.2 });
             }
         };
 

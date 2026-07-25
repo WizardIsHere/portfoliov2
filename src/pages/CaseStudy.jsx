@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowUpRight, Github } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ArrowUpRight, Github } from 'lucide-react';
 import { getServiceById } from '#content/services.js';
 import Nav from '#components/Nav.jsx';
 import Footer from '#components/Footer.jsx';
@@ -10,6 +10,36 @@ const STATUS_STYLE = {
     operational: { dot: 'bg-accent', text: 'text-accent', label: 'operational' },
     private: { dot: 'bg-warn', text: 'text-warn', label: 'private' },
 };
+
+const INCIDENT_ROWS = [
+    ['detected via', 'detectedVia'],
+    ['what would have happened', 'whatWouldHappen'],
+    ['root cause', 'rootCause'],
+    ['the fix', 'fix'],
+    ['why it can\'t regress', 'prevention'],
+];
+
+// A postmortem for a bug that never shipped — see services.js's
+// `incidentReport` field. Styled deliberately unlike the rest of the page
+// (warn-colored, doc-style rows) so it reads as its own artifact, not just
+// another section.
+const IncidentReport = ({ report }) => (
+    <section className="mono mb-10 overflow-hidden rounded-lg border border-warn/40 bg-warn/[0.04]">
+        <div className="flex items-center gap-2 border-b border-warn/30 bg-warn/10 px-4 py-2.5 text-warn">
+            <AlertTriangle size={14} />
+            <span className="text-xs uppercase tracking-wider">incident-review.md</span>
+            <span className="ml-auto text-[11px] text-warn/80">{report.severity}</span>
+        </div>
+        <div className="divide-y divide-warn/15">
+            {INCIDENT_ROWS.map(([label, key]) => (
+                <div key={key} className="grid gap-1 px-4 py-3 sm:grid-cols-[9rem_1fr] sm:gap-4">
+                    <p className="text-[11px] uppercase tracking-wider text-warn/80">{label}</p>
+                    <p className="text-[15px] leading-relaxed text-fg-muted">{report[key]}</p>
+                </div>
+            ))}
+        </div>
+    </section>
+);
 
 const CaseStudy = () => {
     const { id } = useParams();
@@ -60,6 +90,8 @@ const CaseStudy = () => {
                 </div>
 
                 <hr className="my-10 border-border/60" />
+
+                {cs.incidentReport && <IncidentReport report={cs.incidentReport} />}
 
                 <section className="mb-10">
                     <h2 className="mono mb-3 text-xs uppercase tracking-wider text-accent">problem</h2>

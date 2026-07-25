@@ -1,10 +1,63 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { GitCommitHorizontal, Star } from 'lucide-react';
 import useGithub from '#hooks/useGithub.js';
 
 dayjs.extend(relativeTime);
+
+const HEATMAP_DAYS = 90; // ~13 weeks — the real window the events API can see (see useGithub.js)
+const LEVEL_CLASS = ['bg-muted', 'bg-accent/25', 'bg-accent/50', 'bg-accent/75', 'bg-accent'];
+const levelFor = (count) => (count === 0 ? 0 : count <= 1 ? 1 : count <= 3 ? 2 : count <= 6 ? 3 : 4);
+
+// Counts *all* public events per day, not just pushes — GitHub's own graph
+// blends commits/PRs/issues/reviews too, and our events feed can only see
+// pushes reliably (see Hero.jsx's pushes-30d comment on why commit counts
+// aren't derivable at all anymore). "activity" is the honest word for it.
+const GithubHeatmap = ({ events }) => {
+    const weeks = useMemo(() => {
+        const counts = new Map();
+        events.forEach((e) => {
+            const day = dayjs(e.created_at).format('YYYY-MM-DD');
+            counts.set(day, (counts.get(day) || 0) + 1);
+        });
+
+        const today = dayjs().startOf('day');
+        const start = today.subtract(HEATMAP_DAYS - 1, 'day');
+        // Pad to the previous Sunday so every column is a full 7-day week.
+        const gridStart = start.subtract(start.day(), 'day');
+
+        const allDays = [];
+        for (let d = gridStart; !d.isAfter(today); d = d.add(1, 'day')) {
+            const key = d.format('YYYY-MM-DD');
+            allDays.push({ key, date: d, count: d.isBefore(start) ? null : counts.get(key) || 0 });
+        }
+
+        const weekCols = [];
+        for (let i = 0; i < allDays.length; i += 7) weekCols.push(allDays.slice(i, i + 7));
+        return weekCols;
+    }, [events]);
+
+    return (
+        <div className="mono flex gap-[3px] overflow-x-auto pb-1">
+            {weeks.map((week) => (
+                <div key={week[0].key} className="flex flex-col gap-[3px]">
+                    {week.map((day) =>
+                        day.count === null ? (
+                            <span key={day.key} className="h-[11px] w-[11px]" aria-hidden="true" />
+                        ) : (
+                            <span
+                                key={day.key}
+                                title={`${day.count} event${day.count === 1 ? '' : 's'} — ${day.date.format('MMM D')}`}
+                                className={`h-[11px] w-[11px] rounded-sm ${LEVEL_CLASS[levelFor(day.count)]}`}
+                            />
+                        )
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+};
 
 const ActivityLine = ({ event }) => {
     const commit = event.payload.commits[event.payload.commits.length - 1];
@@ -29,13 +82,36 @@ const LiveActivity = () => {
         .slice(0, 6);
 
     return (
-        <section aria-label="Live activity" className="border-b border-border/60 py-16 sm:py-20">
+        <section id="activity" aria-label="Live activity" className="border-b border-border/60 py-16 sm:py-20">
+            <div className="mx-auto mb-8 max-w-5xl px-5">
+                <h2 className="mono mb-1 flex items-center gap-2 text-xs uppercase tracking-wider text-accent">
+                    ~/activity/heatmap
+                    {status === 'ready' && (
+                        <span className="mono inline-flex items-center gap-1.5 rounded border border-accent-2/40 bg-accent-2/10 px-1.5 py-0.5 text-[9px] text-accent-2">
+                            <span className="status-dot relative bg-accent-2">
+                                <span className="status-pulse absolute inset-0" aria-hidden="true" />
+                            </span>
+                            LIVE
+                        </span>
+                    )}
+                </h2>
+                <p className="mb-4 text-fg-muted">{HEATMAP_DAYS} days of public GitHub activity, live.</p>
+
+                <div className="glass rounded-lg p-4">
+                    {status === 'ready' ? (
+                        <GithubHeatmap events={events} />
+                    ) : (
+                        <p className="mono text-xs text-fg-muted">{status === 'error' ? 'Unavailable — see GitHub directly.' : 'fetching…'}</p>
+                    )}
+                </div>
+            </div>
+
             <div className="mx-auto grid max-w-5xl gap-6 px-5 sm:grid-cols-2">
                 <div>
                     <h2 className="mono mb-1 text-xs uppercase tracking-wider text-accent">~/activity</h2>
                     <p className="mb-4 text-fg-muted">Pulled live from the GitHub events API — not a static list.</p>
 
-                    <div className="rounded-lg border border-border bg-surface/50 p-4">
+                    <div className="glass rounded-lg p-4">
                         {status === 'loading' && <p className="mono text-xs text-fg-muted">fetching…</p>}
                         {status === 'error' && (
                             <p className="mono text-xs text-fg-muted">
@@ -62,7 +138,7 @@ const LiveActivity = () => {
                     <h2 className="mono mb-1 text-xs uppercase tracking-wider text-accent">~/repos</h2>
                     <p className="mb-4 text-fg-muted">Recently updated public repositories.</p>
 
-                    <div className="rounded-lg border border-border bg-surface/50 p-4">
+                    <div className="glass rounded-lg p-4">
                         {status !== 'ready' && (
                             <p className="mono text-xs text-fg-muted">
                                 {status === 'error' ? 'Unavailable — see GitHub directly.' : 'fetching…'}

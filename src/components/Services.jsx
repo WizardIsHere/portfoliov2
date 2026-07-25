@@ -52,8 +52,8 @@ const Services = () => {
                 </p>
 
                 <div ref={gridRef} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {services.map((service) => (
-                        <ServiceCard key={service.id} service={service} />
+                    {services.map((service, i) => (
+                        <ServiceCard key={service.id} service={service} index={i} total={services.length} />
                     ))}
                 </div>
             </div>

@@ -116,6 +116,21 @@ export const services = [
             ],
             outcome:
                 "A geocode goes in and a trust-scored, audited zone decision comes out in milliseconds — in-memory polygon lookups instead of per-request DB scans, dual-sink writes so analytics never blocks the response path, and a live-reloadable zone index that needs no deploy to update.",
+            // A postmortem for a failure that never shipped — caught at design time,
+            // not in production. Every line below is the real problem/decision
+            // content above, just framed the way an SRE would write up the risk.
+            incidentReport: {
+                severity: "SEV-2 · prevented pre-ship",
+                detectedVia: "Design review — reading Google's own docs on geocode accuracy tiers, not a monitoring alert.",
+                whatWouldHappen:
+                    "An address geocodes as \"APPROXIMATE\" instead of rooftop-precision. Downstream code checks only one thing — is this point inside the negative-area polygon? — and gets a clean true/false on a coordinate nobody actually trusts. A loan or delivery decision goes out the door on a guess wearing the confidence of a fact.",
+                rootCause:
+                    "Zone membership and geocode confidence were being treated as one signal, when they're independent questions: \"is it in the zone\" and \"do we actually know where this is.\" A single boolean can't hold both — so it silently drops the second one.",
+                fix:
+                    "Multi-signal confidence scoring: cross-validate Google's returned pincode against polygon membership and a 10km-radius neighbor check, reclassifying every geocode as High/Low/Reject before it's allowed anywhere near a decision.",
+                prevention:
+                    "The scoring step isn't optional middleware bolted on after — it's the only door a geocode has into a decision. There's no code path that reaches underwriting logic without going through it first.",
+            },
         },
     },
     {

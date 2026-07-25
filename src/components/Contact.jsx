@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Download, Github, Linkedin, Loader2, Mail, MapPin, Phone, Send } from 'lucide-react';
 import { profile } from '#content/profile.js';
+import useReveal from '#hooks/useReveal.js';
 
 const ROWS = [
     { icon: Mail, label: 'email', value: (p) => p.email, href: (p) => `mailto:${p.email}` },
@@ -92,8 +93,12 @@ const ContactForm = () => {
     );
 };
 
-const Contact = () => (
-    <section id="contact" className="py-16 sm:py-20">
+const Contact = () => {
+    const ref = useRef(null);
+    useReveal(ref, { stagger: 0.15 });
+
+    return (
+        <section id="contact" ref={ref} className="py-16 sm:py-20">
         <div className="mx-auto max-w-5xl px-5">
             <h2 className="mono mb-1 text-xs uppercase tracking-wider text-accent">~/contact</h2>
             <p className="mb-8 max-w-xl text-fg-muted">Open a channel — every link below goes somewhere real.</p>
@@ -104,8 +109,8 @@ const Contact = () => (
                     its own overflow (visible → max-content), not a descendant's
                     `truncate` three levels down. Without this, the value spans below
                     never actually get to clip and the row silently overflows the page. */}
-                <div className="flex min-w-0 flex-col gap-4">
-                    <div className="min-w-0 rounded-lg border border-border bg-surface/50 divide-y divide-border/60">
+                <div className="reveal flex min-w-0 flex-col gap-4">
+                    <div className="hud-frame glass min-w-0 rounded-lg divide-y divide-border/60">
                         {ROWS.map((row) => {
                             const Icon = row.icon;
                             const { label, value, href } = row;
@@ -137,10 +142,13 @@ const Contact = () => (
                     </a>
                 </div>
 
-                <ContactForm />
+                <div className="reveal">
+                    <ContactForm />
+                </div>
             </div>
         </div>
     </section>
-);
+    );
+};
 
 export default Contact;

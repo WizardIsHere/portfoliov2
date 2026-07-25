@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Download, Menu, Search, X } from 'lucide-react';
+import { Briefcase, Download, Menu, Search, TerminalSquare, X } from 'lucide-react';
 import { profile } from '#content/profile.js';
 import useLenisStore from '#store/lenis.js';
 import useStatusStore from '#store/status.js';
+import useViewModeStore from '#store/viewMode.js';
 
 const openCommandPalette = () => window.dispatchEvent(new Event('open-command-palette'));
 
@@ -55,6 +56,8 @@ const Nav = () => {
     const onHome = location.pathname === '/';
     const [open, setOpen] = useState(false);
     const lenis = useLenisStore((s) => s.lenis);
+    const recruiterMode = useViewModeStore((s) => s.recruiterMode);
+    const toggleViewMode = useViewModeStore((s) => s.toggle);
 
     // On the home page with Lenis active, route the jump through it so it's
     // smooth like the rest of the page instead of a native instant/jump-cut
@@ -73,21 +76,33 @@ const Nav = () => {
                     <span>shushant.dev</span>
                 </Link>
 
-                <ul className="hidden items-center gap-6 sm:flex">
-                    {SECTIONS.map((s) => (
-                        <li key={s.id}>
-                            <a
-                                href={onHome ? `#${s.id}` : `/#${s.id}`}
-                                onClick={(e) => handleSectionClick(e, s.id)}
-                                className="text-fg-muted transition-colors hover:text-fg"
-                            >
-                                {s.label}
-                            </a>
-                        </li>
-                    ))}
-                </ul>
+                {!recruiterMode && (
+                    <ul className="hidden items-center gap-6 sm:flex">
+                        {SECTIONS.map((s) => (
+                            <li key={s.id}>
+                                <a
+                                    href={onHome ? `#${s.id}` : `/#${s.id}`}
+                                    onClick={(e) => handleSectionClick(e, s.id)}
+                                    className="text-fg-muted transition-colors hover:text-fg"
+                                >
+                                    {s.label}
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                )}
 
                 <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={toggleViewMode}
+                        aria-label={recruiterMode ? 'Switch to full site' : 'Switch to recruiter mode'}
+                        title={recruiterMode ? 'Switch to full site' : 'Recruiter mode: clean, scannable summary'}
+                        className="flex h-11 min-w-11 items-center gap-1.5 rounded-md border border-border px-2.5 text-fg-muted transition-colors hover:border-fg-muted hover:text-fg"
+                    >
+                        {recruiterMode ? <TerminalSquare size={14} /> : <Briefcase size={14} />}
+                        <span className="hidden text-[11px] sm:inline">{recruiterMode ? 'full site' : 'recruiter mode'}</span>
+                    </button>
                     <button
                         type="button"
                         onClick={openCommandPalette}
@@ -120,20 +135,21 @@ const Nav = () => {
 
             {open && (
                 <ul className="mono flex flex-col gap-1 border-t border-border/60 px-5 py-3 sm:hidden">
-                    {SECTIONS.map((s) => (
-                        <li key={s.id}>
-                            <a
-                                href={onHome ? `#${s.id}` : `/#${s.id}`}
-                                onClick={(e) => {
-                                    handleSectionClick(e, s.id);
-                                    setOpen(false);
-                                }}
-                                className="block min-h-11 py-2.5 text-fg-muted"
-                            >
-                                {s.label}
-                            </a>
-                        </li>
-                    ))}
+                    {!recruiterMode &&
+                        SECTIONS.map((s) => (
+                            <li key={s.id}>
+                                <a
+                                    href={onHome ? `#${s.id}` : `/#${s.id}`}
+                                    onClick={(e) => {
+                                        handleSectionClick(e, s.id);
+                                        setOpen(false);
+                                    }}
+                                    className="block min-h-11 py-2.5 text-fg-muted"
+                                >
+                                    {s.label}
+                                </a>
+                            </li>
+                        ))}
                     <li>
                         <a
                             href={profile.resumeUrl}

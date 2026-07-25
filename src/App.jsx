@@ -11,6 +11,9 @@ import MatrixRain from '#components/MatrixRain.jsx';
 import Toast from '#components/Toast.jsx';
 import SmoothScroll from '#components/SmoothScroll.jsx';
 import CustomCursor from '#components/CustomCursor.jsx';
+import MissionControlBackground from '#components/MissionControlBackground.jsx';
+import SectionRail from '#components/SectionRail.jsx';
+import BootSequence from '#components/BootSequence.jsx';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -18,8 +21,11 @@ const App = () => (
     <>
         {/* Mounted once, outside <Routes>, so ⌘K, the backtick terminal, and the
             easter-egg toast work identically on the home page and every case-study route. */}
+        <MissionControlBackground />
         <SmoothScroll />
         <CustomCursor />
+        <SectionRail />
+        <BootSequence />
         <CommandPalette />
         <Terminal />
         <MatrixRain />

@@ -15,6 +15,9 @@
     --color-fg: #f8fafc;
     --color-fg-muted: #94a3b8;
     --color-accent: #22c55e;
+    /* Secondary "instrument panel" accent — HUD lines, glows, data-flow, depth.
+       Green stays primary; cyan is decorative + used only where contrast-verified. */
+    --color-accent-2: #22d3ee;
     --color-warn: #f59e0b;
     --color-destructive: #ef4444;
 }
@@ -92,6 +95,112 @@ html.lenis body {
     background-size: 48px 48px;
 }
 
+/* ── Mission-control HUD kit ─────────────────────────────────────────────
+   Reusable instrument-panel primitives. Green primary, cyan secondary. */
+
+/* Four corner brackets drawn with layered gradients (no extra DOM, no images).
+   Wrap any panel in .hud-frame; content sits inside untouched. */
+.hud-frame {
+    position: relative;
+    --hud-c: color-mix(in srgb, var(--color-accent-2) 55%, transparent);
+    --hud-size: 15px;
+    --hud-thick: 1.5px;
+}
+.hud-frame::before,
+.hud-frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+.hud-frame::before {
+    background:
+        linear-gradient(var(--hud-c), var(--hud-c)) top left / var(--hud-size) var(--hud-thick) no-repeat,
+        linear-gradient(var(--hud-c), var(--hud-c)) top left / var(--hud-thick) var(--hud-size) no-repeat,
+        linear-gradient(var(--hud-c), var(--hud-c)) top right / var(--hud-size) var(--hud-thick) no-repeat,
+        linear-gradient(var(--hud-c), var(--hud-c)) top right / var(--hud-thick) var(--hud-size) no-repeat;
+}
+.hud-frame::after {
+    background:
+        linear-gradient(var(--hud-c), var(--hud-c)) bottom left / var(--hud-size) var(--hud-thick) no-repeat,
+        linear-gradient(var(--hud-c), var(--hud-c)) bottom left / var(--hud-thick) var(--hud-size) no-repeat,
+        linear-gradient(var(--hud-c), var(--hud-c)) bottom right / var(--hud-size) var(--hud-thick) no-repeat,
+        linear-gradient(var(--hud-c), var(--hud-c)) bottom right / var(--hud-thick) var(--hud-size) no-repeat;
+}
+
+.glass {
+    background: color-mix(in srgb, var(--color-surface) 45%, transparent);
+    backdrop-filter: blur(8px);
+    border: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
+}
+
+/* Corner brackets (from .hud-frame) that stay hidden until the parent .group
+   is hovered/focused — used on cards so 5 of them aren't all bracketed at rest.
+   Requires .hud-frame on the same element for the corner geometry. */
+.hud-frame-hover::before,
+.hud-frame-hover::after {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.group:hover .hud-frame-hover::before,
+.group:hover .hud-frame-hover::after,
+.group:focus-within .hud-frame-hover::before,
+.group:focus-within .hud-frame-hover::after {
+    opacity: 1;
+}
+
+/* Data-flow packet travelling down a stack pipeline connector (StackMap.jsx).
+   The connector is position:relative; the packet rides from top to bottom. */
+@keyframes stack-packet {
+    0% { top: -8px; opacity: 0; }
+    12% { opacity: 1; }
+    88% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+}
+.stack-packet {
+    position: absolute;
+    left: 50%;
+    margin-left: -1px;
+    width: 2px;
+    height: 12px;
+    border-radius: 2px;
+    background: linear-gradient(var(--color-accent-2), transparent);
+    box-shadow: 0 0 8px var(--color-accent-2);
+    animation: stack-packet 2.4s linear infinite;
+}
+
+.scanlines {
+    background-image: repeating-linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-fg) 3%, transparent) 0,
+        color-mix(in srgb, var(--color-fg) 3%, transparent) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+}
+
+.glow-accent {
+    box-shadow: 0 0 26px -8px color-mix(in srgb, var(--color-accent) 55%, transparent);
+}
+.glow-cyan {
+    box-shadow: 0 0 26px -8px color-mix(in srgb, var(--color-accent-2) 55%, transparent);
+}
+.text-glow-cyan {
+    text-shadow: 0 0 34px color-mix(in srgb, var(--color-accent-2) 22%, transparent);
+}
+
+/* Slow diagonal light-sweep that rides over the background grid (used by
+   MissionControlBackground.jsx). */
+@keyframes grid-sweep {
+    0% { transform: translate3d(-30%, -60%, 0); opacity: 0; }
+    45% { opacity: 0.55; }
+    100% { transform: translate3d(30%, 60%, 0); opacity: 0; }
+}
+.grid-sweep {
+    background: linear-gradient(115deg, transparent 40%, color-mix(in srgb, var(--color-accent-2) 12%, transparent) 50%, transparent 60%);
+    animation: grid-sweep 9s ease-in-out infinite;
+}
+
 @keyframes ambient-drift {
     0%, 100% { transform: translate(0, 0) scale(1); }
     50% { transform: translate(-3%, 2%) scale(1.05); }
@@ -155,6 +264,13 @@ html.lenis body {
     animation: pulse-ring 2s ease-out infinite;
 }
 
+/* BootSequence.jsx line reveal. No reduced-motion guard needed — that
+   component returns null entirely when reduced motion is requested. */
+@keyframes boot-line {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes toast-in {
     from { transform: translateY(12px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
@@ -171,7 +287,12 @@ html.lenis body {
     .animate-toast-in,
     .liftoff-icon,
     .log-scroll,
+    .grid-sweep,
     .scroll-cue-bounce {
         animation: none;
+    }
+    /* the travelling packet has no meaningful static state — hide it entirely */
+    .stack-packet {
+        display: none;
     }
 }

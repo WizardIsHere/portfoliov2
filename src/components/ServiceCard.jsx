@@ -8,7 +8,7 @@ const STATUS_STYLE = {
     private: { dot: 'bg-warn', text: 'text-warn', label: 'private' },
 };
 
-const ServiceCard = ({ service }) => {
+const ServiceCard = ({ service, index, total }) => {
     const statusStyle = STATUS_STYLE[service.status] || STATUS_STYLE.operational;
     const cardRef = useRef(null);
     const [tiltEnabled] = useState(
@@ -55,7 +55,7 @@ const ServiceCard = ({ service }) => {
         <article
             ref={cardRef}
             style={{ transformStyle: 'preserve-3d', transformPerspective: 800 }}
-            className="service-card group flex flex-col gap-3 overflow-hidden rounded-lg border border-border bg-surface/60 p-5 transition-colors hover:border-fg-muted">
+            className="service-card group hud-frame hud-frame-hover glass flex flex-col gap-3 overflow-hidden rounded-lg p-5 transition-[border-color,box-shadow] duration-300 hover:border-accent-2/50 hover:shadow-[0_0_34px_-10px_var(--color-accent-2)]">
             <div className="-mx-5 -mt-5 mb-1 aspect-video overflow-hidden border-b border-border bg-muted">
                 {service.image ? (
                     <img
@@ -71,9 +71,17 @@ const ServiceCard = ({ service }) => {
                     </div>
                 )}
             </div>
-            <div className="mono flex items-center gap-2 text-[11px] uppercase tracking-wider">
-                <span className={`status-dot ${statusStyle.dot}`} />
-                <span className={statusStyle.text}>{statusStyle.label}</span>
+            <div className="mono flex items-center justify-between gap-2 text-[11px] uppercase tracking-wider">
+                <span className="flex items-center gap-2">
+                    <span className={`status-dot ${statusStyle.dot}`} />
+                    <span className={statusStyle.text}>{statusStyle.label}</span>
+                </span>
+                {typeof index === 'number' && (
+                    <span className="tabular-nums text-fg-muted/50">
+                        {String(index + 1).padStart(2, '0')}
+                        <span className="text-fg-muted/30"> / {String(total).padStart(2, '0')}</span>
+                    </span>
+                )}
             </div>
 
             <h3 className="mono text-lg font-semibold text-fg">{service.name}</h3>
