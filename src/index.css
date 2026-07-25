@@ -271,6 +271,16 @@ html.lenis body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Stack chip tooltip entrance (StackMap.jsx). Ends at translateX(-50%) so it
+   lines up with the element's static -translate-x-1/2 once the anim finishes. */
+@keyframes tooltip-in {
+    from { opacity: 0; transform: translate(-50%, 4px) scale(0.96); }
+    to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+.tooltip-in {
+    animation: tooltip-in 0.15s ease-out;
+}
+
 @keyframes toast-in {
     from { transform: translateY(12px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
@@ -288,6 +298,7 @@ html.lenis body {
     .liftoff-icon,
     .log-scroll,
     .grid-sweep,
+    .tooltip-in,
     .scroll-cue-bounce {
         animation: none;
     }

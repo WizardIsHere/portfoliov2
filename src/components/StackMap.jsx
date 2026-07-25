@@ -31,9 +31,15 @@ const Chip = ({ name, note, tone = 'default' }) => {
             {show && note && (
                 <span
                     role="tooltip"
-                    className="mono absolute left-1/2 top-full z-20 mt-1 w-48 -translate-x-1/2 rounded-md border border-border bg-muted p-2 text-[11px] leading-snug text-fg-muted shadow-lg"
+                    className="tooltip-in mono pointer-events-none absolute left-1/2 top-full z-30 mt-2 w-52 -translate-x-1/2 rounded-md border border-border/70 border-l-2 border-l-accent-2 bg-bg/95 p-2.5 text-[11px] leading-snug text-fg shadow-[0_0_24px_-8px_var(--color-accent-2)] backdrop-blur"
                 >
+                    <span className="mb-1 block text-[9px] uppercase tracking-widest text-accent-2">{name}</span>
                     {note}
+                    {/* up-caret into the chip above */}
+                    <span
+                        aria-hidden="true"
+                        className="absolute bottom-full left-1/2 h-2 w-2 -translate-x-1/2 translate-y-1/2 rotate-45 border-l border-t border-border/70 bg-bg"
+                    />
                 </span>
             )}
         </span>
@@ -118,10 +124,11 @@ const StackMap = () => {
                                     )}
                                 </div>
                                 <div
-                                    className={`stack-reveal group relative flex min-w-0 flex-1 flex-col gap-3 overflow-hidden rounded-lg border border-border bg-surface/50 p-4 transition-colors hover:border-accent/40 ${isLast ? 'mb-0' : 'mb-3'}`}
+                                    className={`stack-reveal group relative flex min-w-0 flex-1 flex-col gap-3 rounded-lg border border-border bg-surface/50 p-4 transition-colors hover:border-accent/40 ${isLast ? 'mb-0' : 'mb-3'}`}
                                 >
-                                    {/* accent edge that lights up on hover */}
-                                    <span className="pointer-events-none absolute inset-y-0 left-0 w-0.5 bg-accent/30 transition-colors group-hover:bg-accent" aria-hidden="true" />
+                                    {/* accent edge that lights up on hover — inset from the
+                                        rounded corners so it doesn't poke out (card no longer clips) */}
+                                    <span className="pointer-events-none absolute bottom-3 left-0 top-3 w-0.5 rounded-full bg-accent/30 transition-colors group-hover:bg-accent" aria-hidden="true" />
                                     <div className="flex items-center justify-between">
                                         <p className="mono text-[10px] uppercase tracking-wider text-fg-muted">{layer.label}</p>
                                         <p className="mono text-[10px] tabular-nums text-fg-muted/60">{layer.items.length}</p>

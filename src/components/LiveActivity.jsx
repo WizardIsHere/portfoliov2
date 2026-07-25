@@ -14,8 +14,15 @@ const levelFor = (count) => (count === 0 ? 0 : count <= 1 ? 1 : count <= 3 ? 2 :
 // blends commits/PRs/issues/reviews too, and our events feed can only see
 // pushes reliably (see Hero.jsx's pushes-30d comment on why commit counts
 // aren't derivable at all anymore). "activity" is the honest word for it.
+const Stat = ({ value, label }) => (
+    <div className="flex flex-col justify-center bg-surface/30 px-3 py-2.5">
+        <span className="text-lg font-bold tabular-nums leading-none text-fg">{value}</span>
+        <span className="mt-1 text-[10px] uppercase tracking-wider text-fg-muted">{label}</span>
+    </div>
+);
+
 const GithubHeatmap = ({ events }) => {
-    const weeks = useMemo(() => {
+    const { weeks, stats, startLabel } = useMemo(() => {
         const counts = new Map();
         events.forEach((e) => {
             const day = dayjs(e.created_at).format('YYYY-MM-DD');
@@ -35,38 +42,81 @@ const GithubHeatmap = ({ events }) => {
 
         const weekCols = [];
         for (let i = 0; i < allDays.length; i += 7) weekCols.push(allDays.slice(i, i + 7));
-        return weekCols;
+
+        const inRange = allDays.filter((d) => d.count !== null);
+        const total = inRange.reduce((s, d) => s + d.count, 0);
+        const activeDays = inRange.filter((d) => d.count > 0).length;
+        const busiest = inRange.reduce((max, d) => (d.count > (max?.count || 0) ? d : max), null);
+        // current streak: consecutive days up to today with activity
+        let streak = 0;
+        for (let i = inRange.length - 1; i >= 0; i--) {
+            if (inRange[i].count > 0) streak++;
+            else break;
+        }
+
+        return {
+            weeks: weekCols,
+            startLabel: start.format('MMM D'),
+            stats: { total, activeDays, busiest: busiest?.count ? busiest.date.format('MMM D') : '—', streak },
+        };
     }, [events]);
 
     return (
-        <div className="mono flex gap-[3px] overflow-x-auto pb-1">
-            {weeks.map((week) => (
-                <div key={week[0].key} className="flex flex-col gap-[3px]">
-                    {week.map((day) =>
-                        day.count === null ? (
-                            <span key={day.key} className="h-[11px] w-[11px]" aria-hidden="true" />
-                        ) : (
-                            <span
-                                key={day.key}
-                                title={`${day.count} event${day.count === 1 ? '' : 's'} — ${day.date.format('MMM D')}`}
-                                className={`h-[11px] w-[11px] rounded-sm ${LEVEL_CLASS[levelFor(day.count)]}`}
-                            />
-                        )
-                    )}
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch lg:justify-between">
+            <div className="min-w-0">
+                <div className="mono flex gap-[3px] overflow-x-auto pb-1">
+                    {weeks.map((week) => (
+                        <div key={week[0].key} className="flex flex-col gap-[3px]">
+                            {week.map((day) =>
+                                day.count === null ? (
+                                    <span key={day.key} className="h-[11px] w-[11px]" aria-hidden="true" />
+                                ) : (
+                                    <span
+                                        key={day.key}
+                                        title={`${day.count} event${day.count === 1 ? '' : 's'} — ${day.date.format('MMM D')}`}
+                                        className={`h-[11px] w-[11px] rounded-sm ${LEVEL_CLASS[levelFor(day.count)]}`}
+                                    />
+                                )
+                            )}
+                        </div>
+                    ))}
                 </div>
-            ))}
+                <div className="mono mt-2.5 flex items-center gap-1.5 text-[10px] text-fg-muted/60">
+                    <span className="mr-1">{startLabel}</span>
+                    <span className="ml-auto mr-1">less</span>
+                    {LEVEL_CLASS.map((c, i) => (
+                        <span key={i} className={`h-[10px] w-[10px] rounded-sm ${c}`} />
+                    ))}
+                    <span className="ml-1">more</span>
+                </div>
+            </div>
+
+            {/* stats readout — fills the panel to the right instead of leaving dead space */}
+            <div className="mono grid grid-cols-2 gap-px self-start overflow-hidden rounded-md border border-border/50 lg:w-60 lg:shrink-0">
+                <Stat value={stats.total} label={`events / ${HEATMAP_DAYS}d`} />
+                <Stat value={stats.activeDays} label="active days" />
+                <Stat value={stats.streak} label="day streak" />
+                <Stat value={stats.busiest} label="busiest day" />
+            </div>
         </div>
     );
 };
 
+// GitHub's public events API no longer returns the `commits` array on PushEvent
+// payloads, so we can't show commit messages here anymore — but the push itself
+// (repo · branch @ sha · when) is real and available, so that's what we show.
 const ActivityLine = ({ event }) => {
-    const commit = event.payload.commits[event.payload.commits.length - 1];
+    const repo = event.repo.name.split('/')[1];
+    const branch = (event.payload?.ref || '').replace('refs/heads/', '');
+    const sha = (event.payload?.head || '').slice(0, 7);
 
     return (
-        <li className="mono flex items-start gap-2.5 text-[13px]">
-            <GitCommitHorizontal size={14} className="mt-0.5 shrink-0 text-accent" />
+        <li className="mono flex items-center gap-2.5 text-[13px]">
+            <GitCommitHorizontal size={14} className="shrink-0 text-accent" />
             <span className="min-w-0 flex-1 truncate text-fg-muted">
-                <span className="text-fg">{event.repo.name.split('/')[1]}</span> — {commit.message.split('\n')[0].slice(0, 72)}
+                pushed to <span className="text-fg">{repo}</span>
+                {branch && <span className="text-fg-muted/70"> · {branch}</span>}
+                {sha && <span className="text-accent-2/70"> @{sha}</span>}
             </span>
             <span className="shrink-0 text-fg-muted/70">{dayjs(event.created_at).fromNow()}</span>
         </li>
@@ -75,11 +125,7 @@ const ActivityLine = ({ event }) => {
 
 const LiveActivity = () => {
     const { status, events, repos } = useGithub();
-    // Some PushEvents carry zero commits (force-pushes, branch deletes) — exclude
-    // those here so "pushEvents.length === 0" below is a reliable empty-state check.
-    const pushEvents = events
-        .filter((e) => e.type === 'PushEvent' && e.payload?.commits?.length > 0)
-        .slice(0, 6);
+    const pushEvents = events.filter((e) => e.type === 'PushEvent').slice(0, 6);
 
     return (
         <section id="activity" aria-label="Live activity" className="border-b border-border/60 py-16 sm:py-20">
