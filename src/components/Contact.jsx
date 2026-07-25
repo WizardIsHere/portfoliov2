@@ -59,6 +59,10 @@ const ContactForm = () => {
 
     return (
         <form onSubmit={handleSubmit} className="mono flex flex-col gap-3 rounded-lg border border-border bg-surface/50 p-4">
+            {/* labels the email Formspree sends; _gotcha is a honeypot Formspree
+                silently drops if a bot fills it (hidden from real users). */}
+            <input type="hidden" name="_subject" value="New message from shushant.dev" />
+            <input type="text" name="_gotcha" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
             <input
                 type="text"
                 name="name"

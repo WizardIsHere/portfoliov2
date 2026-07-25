@@ -14,6 +14,7 @@ import CustomCursor from '#components/CustomCursor.jsx';
 import MissionControlBackground from '#components/MissionControlBackground.jsx';
 import SectionRail from '#components/SectionRail.jsx';
 import BootSequence from '#components/BootSequence.jsx';
+import { Analytics } from '@vercel/analytics/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/services/:id" element={<CaseStudy />} />
             <Route path="*" element={<NotFound />} />
         </Routes>
+        <Analytics />
     </>
 );
 
